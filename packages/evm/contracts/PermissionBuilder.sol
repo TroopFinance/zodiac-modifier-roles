@@ -60,7 +60,7 @@ abstract contract PermissionBuilder is Core {
         address targetAddress,
         ExecutionOptions options
     ) external onlyOwner {
-        roles[roleKey].targets[targetAddress] = TargetAddress({
+        _roles()[roleKey].targets[targetAddress] = TargetAddress({
             clearance: Clearance.Target,
             options: options
         });
@@ -74,7 +74,7 @@ abstract contract PermissionBuilder is Core {
         bytes32 roleKey,
         address targetAddress
     ) external onlyOwner {
-        roles[roleKey].targets[targetAddress] = TargetAddress({
+        _roles()[roleKey].targets[targetAddress] = TargetAddress({
             clearance: Clearance.None,
             options: ExecutionOptions.None
         });
@@ -88,7 +88,7 @@ abstract contract PermissionBuilder is Core {
         bytes32 roleKey,
         address targetAddress
     ) external onlyOwner {
-        roles[roleKey].targets[targetAddress] = TargetAddress({
+        _roles()[roleKey].targets[targetAddress] = TargetAddress({
             clearance: Clearance.Function,
             options: ExecutionOptions.None
         });
@@ -106,8 +106,9 @@ abstract contract PermissionBuilder is Core {
         bytes4 selector,
         ExecutionOptions options
     ) external onlyOwner {
-        roles[roleKey].scopeConfig[_key(targetAddress, selector)] = BufferPacker
-            .packHeaderAsWildcarded(options);
+        _roles()[roleKey].scopeConfig[
+            _key(targetAddress, selector)
+        ] = BufferPacker.packHeaderAsWildcarded(options);
 
         emit AllowFunction(roleKey, targetAddress, selector, options);
     }
@@ -121,7 +122,7 @@ abstract contract PermissionBuilder is Core {
         address targetAddress,
         bytes4 selector
     ) external onlyOwner {
-        delete roles[roleKey].scopeConfig[_key(targetAddress, selector)];
+        delete _roles()[roleKey].scopeConfig[_key(targetAddress, selector)];
         emit RevokeFunction(roleKey, targetAddress, selector);
     }
 
@@ -141,7 +142,7 @@ abstract contract PermissionBuilder is Core {
         Integrity.enforce(conditions);
 
         _store(
-            roles[roleKey],
+            _roles()[roleKey],
             _key(targetAddress, selector),
             conditions,
             options
@@ -170,13 +171,14 @@ abstract contract PermissionBuilder is Core {
             revert UnsuitableMaxBalanceForAllowance();
         }
 
-        allowances[key] = Allowance({
+        _allowances()[key] = Allowance({
             refillAmount: refillAmount,
+            maxBalance: maxBalance,
             refillInterval: refillInterval,
-            refillTimestamp: refillTimestamp,
             balance: balance,
-            maxBalance: maxBalance
+            refillTimestamp: refillTimestamp
         });
+
         emit SetAllowance(
             key,
             balance,

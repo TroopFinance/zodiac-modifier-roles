@@ -21,7 +21,9 @@ contract Roles is
     PermissionChecker,
     PermissionLoader
 {
-    mapping(address => bytes32) public defaultRoles;
+    // keccak("gnosis.zodiac.roles.default_roles")
+    bytes32 private constant DEFAULT_ROLES_SLOT =
+        0x69a449db6228fc24695b8cc0e8122020f7a87ed6de25ddc44c769f61b4d6be1c;
 
     event AssignRoles(address module, bytes32[] roleKeys, bool[] memberOf);
     event RolesModSetup(
@@ -64,6 +66,19 @@ contract Roles is
         emit RolesModSetup(msg.sender, _owner, _avatar, _target);
     }
 
+    /// @dev Getter for unstructured storage:
+    ///     mapping(address module => bytes32 roleKey) defaultRoles
+    /// @return defaultRoles_ Default roles mapping
+    function _defaultRoles()
+        internal
+        pure
+        returns (mapping(address => bytes32) storage defaultRoles_)
+    {
+        assembly {
+            defaultRoles_.slot := DEFAULT_ROLES_SLOT
+        }
+    }
+
     /// @dev Assigns and revokes roles to a given module.
     /// @param module Module on which to assign/revoke roles.
     /// @param roleKeys Roles to assign/revoke.
@@ -77,7 +92,7 @@ contract Roles is
             revert ArraysDifferentLength();
         }
         for (uint16 i; i < roleKeys.length; ++i) {
-            roles[roleKeys[i]].members[module] = memberOf[i];
+            _roles()[roleKeys[i]].members[module] = memberOf[i];
         }
         if (!isModuleEnabled(module)) {
             enableModule(module);
@@ -92,7 +107,7 @@ contract Roles is
         address module,
         bytes32 roleKey
     ) external onlyOwner {
-        defaultRoles[module] = roleKey;
+        _defaultRoles()[module] = roleKey;
         emit SetDefaultRole(module, roleKey);
     }
 
@@ -109,7 +124,7 @@ contract Roles is
         Enum.Operation operation
     ) public override moduleOnly returns (bool success) {
         Consumption[] memory consumptions = _authorize(
-            defaultRoles[msg.sender],
+            _defaultRoles()[msg.sender],
             to,
             value,
             data,
@@ -138,7 +153,7 @@ contract Roles is
         returns (bool success, bytes memory returnData)
     {
         Consumption[] memory consumptions = _authorize(
-            defaultRoles[msg.sender],
+            _defaultRoles()[msg.sender],
             to,
             value,
             data,
