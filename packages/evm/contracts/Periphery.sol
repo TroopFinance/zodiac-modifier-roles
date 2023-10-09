@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.17 <0.9.0;
 
-import "@gnosis.pm/zodiac/contracts/core/Modifier.sol";
 import "./adapters/Types.sol";
 
 /**
@@ -9,7 +8,7 @@ import "./adapters/Types.sol";
  * functionality for the Zodiac Roles Mod through the use of adapters.
  * @author Cristóvão Honorato - <cristovao.honorato@gnosis.io>
  */
-abstract contract Periphery is OwnableUpgradeable {
+abstract contract Periphery {
     event SetUnwrapAdapter(
         address to,
         bytes4 selector,
@@ -22,7 +21,7 @@ abstract contract Periphery is OwnableUpgradeable {
         address to,
         bytes4 selector,
         ITransactionUnwrapper adapter
-    ) external onlyOwner {
+    ) internal {
         unwrappers[bytes32(bytes20(to)) | (bytes32(selector) >> 160)] = adapter;
         emit SetUnwrapAdapter(to, selector, adapter);
     }

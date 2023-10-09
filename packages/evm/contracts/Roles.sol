@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.17 <0.9.0;
 
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {Module} from "./lib/Module.sol";
 import "./AllowanceTracker.sol";
 import "./PermissionBuilder.sol";
 import "./PermissionChecker.sol";
@@ -15,7 +17,8 @@ import "./PermissionLoader.sol";
  * @author Nathan Ginnever    - <nathan.ginnever@gnosis.io>
  */
 contract Roles is
-    Modifier,
+    Initializable,
+    Module,
     AllowanceTracker,
     PermissionBuilder,
     PermissionChecker,
@@ -39,6 +42,9 @@ contract Roles is
     /// Sender is allowed to make this call, but the internal transaction failed
     error ModuleTransactionFailed();
 
+    // constructor() {
+    //     _disableInitializers();
+    // }
     /// @param _owner Address of the owner
     /// @param _avatar Address of the avatar (e.g. a Gnosis Safe)
     /// @param _target Address of the contract that will call exec function
@@ -50,7 +56,7 @@ contract Roles is
     /// @dev There is no zero address check as solidty will check for
     /// missing arguments and the space of invalid addresses is too large
     /// to check. Invalid avatar or target address can be reset by owner.
-    function setUp(bytes memory initParams) public override initializer {
+    function setUp(bytes memory initParams) public initializer {
         (address _owner, address _avatar, address _target) = abi.decode(
             initParams,
             (address, address, address)
@@ -61,7 +67,6 @@ contract Roles is
         target = _target;
 
         _transferOwnership(_owner);
-        setupModules();
 
         emit RolesModSetup(msg.sender, _owner, _avatar, _target);
     }
@@ -80,6 +85,7 @@ contract Roles is
     }
 
     /// @dev Assigns and revokes roles to a given module.
+    /// @dev ⚠️ Check that the caller is authorised to assign roles first ⚠️
     /// @param module Module on which to assign/revoke roles.
     /// @param roleKeys Roles to assign/revoke.
     /// @param memberOf Assign (true) or revoke (false) corresponding roleKeys.
@@ -87,15 +93,12 @@ contract Roles is
         address module,
         bytes32[] calldata roleKeys,
         bool[] calldata memberOf
-    ) external onlyOwner {
+    ) internal {
         if (roleKeys.length != memberOf.length) {
             revert ArraysDifferentLength();
         }
         for (uint16 i; i < roleKeys.length; ++i) {
             _roles()[roleKeys[i]].members[module] = memberOf[i];
-        }
-        if (!isModuleEnabled(module)) {
-            enableModule(module);
         }
         emit AssignRoles(module, roleKeys, memberOf);
     }
@@ -103,10 +106,7 @@ contract Roles is
     /// @dev Sets the default role used for a module if it calls execTransactionFromModule() or execTransactionFromModuleReturnData().
     /// @param module Address of the module on which to set default role.
     /// @param roleKey Role to be set as default.
-    function setDefaultRole(
-        address module,
-        bytes32 roleKey
-    ) external onlyOwner {
+    function setDefaultRole(address module, bytes32 roleKey) internal {
         _defaultRoles()[module] = roleKey;
         emit SetDefaultRole(module, roleKey);
     }
@@ -116,13 +116,12 @@ contract Roles is
     /// @param value Ether value of module transaction
     /// @param data Data payload of module transaction
     /// @param operation Operation type of module transaction
-    /// @notice Can only be called by enabled modules
     function execTransactionFromModule(
         address to,
         uint256 value,
         bytes calldata data,
         Enum.Operation operation
-    ) public override moduleOnly returns (bool success) {
+    ) internal returns (bool success) {
         Consumption[] memory consumptions = _authorize(
             _defaultRoles()[msg.sender],
             to,
@@ -140,18 +139,12 @@ contract Roles is
     /// @param value Ether value of module transaction
     /// @param data Data payload of module transaction
     /// @param operation Operation type of module transaction
-    /// @notice Can only be called by enabled modules
     function execTransactionFromModuleReturnData(
         address to,
         uint256 value,
         bytes calldata data,
         Enum.Operation operation
-    )
-        public
-        override
-        moduleOnly
-        returns (bool success, bytes memory returnData)
-    {
+    ) internal returns (bool success, bytes memory returnData) {
         Consumption[] memory consumptions = _authorize(
             _defaultRoles()[msg.sender],
             to,
@@ -179,7 +172,7 @@ contract Roles is
         Enum.Operation operation,
         bytes32 roleKey,
         bool shouldRevert
-    ) public moduleOnly returns (bool success) {
+    ) internal returns (bool success) {
         Consumption[] memory consumptions = _authorize(
             roleKey,
             to,
@@ -210,7 +203,7 @@ contract Roles is
         Enum.Operation operation,
         bytes32 roleKey,
         bool shouldRevert
-    ) public moduleOnly returns (bool success, bytes memory returnData) {
+    ) internal returns (bool success, bytes memory returnData) {
         Consumption[] memory consumptions = _authorize(
             roleKey,
             to,

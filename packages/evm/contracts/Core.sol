@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.17 <0.9.0;
 
-import "@gnosis.pm/zodiac/contracts/core/Modifier.sol";
+import "./lib/Module.sol";
 import "./Types.sol";
 
 /**
@@ -9,7 +9,7 @@ import "./Types.sol";
  * the common abstract connection points between Builder, Loader, and Checker.
  * @author Cristóvão Honorato - <cristovao.honorato@gnosis.io>
  */
-abstract contract Core is Modifier {
+abstract contract Core is Module {
     // keccak("gnosis.zodiac.roles.roles")
     bytes32 private constant ROLES_SLOT =
         0x4d71564201ff6d4475aa56045ce2448417af9525d73788b52db36233610e1d32;
