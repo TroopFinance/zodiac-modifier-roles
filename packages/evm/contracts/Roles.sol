@@ -86,7 +86,7 @@ contract Roles is
     /// @param module Module on which to assign/revoke roles.
     /// @param roleKeys Roles to assign/revoke.
     /// @param memberOf Assign (true) or revoke (false) corresponding roleKeys.
-    function assignRoles(
+    function _assignRoles(
         address module,
         bytes32[] calldata roleKeys,
         bool[] calldata memberOf
@@ -103,7 +103,7 @@ contract Roles is
     /// @dev Sets the default role used for a module if it calls execTransactionFromModule() or execTransactionFromModuleReturnData().
     /// @param module Address of the module on which to set default role.
     /// @param roleKey Role to be set as default.
-    function setDefaultRole(address module, bytes32 roleKey) internal {
+    function _setDefaultRole(address module, bytes32 roleKey) internal {
         _defaultRoles()[module] = roleKey;
         emit SetDefaultRole(module, roleKey);
     }
@@ -113,7 +113,7 @@ contract Roles is
     /// @param value Ether value of module transaction
     /// @param data Data payload of module transaction
     /// @param operation Operation type of module transaction
-    function execTransactionFromModule(
+    function _execTransactionFromModule(
         address to,
         uint256 value,
         bytes calldata data,
@@ -136,7 +136,7 @@ contract Roles is
     /// @param value Ether value of module transaction
     /// @param data Data payload of module transaction
     /// @param operation Operation type of module transaction
-    function execTransactionFromModuleReturnData(
+    function _execTransactionFromModuleReturnData(
         address to,
         uint256 value,
         bytes calldata data,
@@ -162,7 +162,7 @@ contract Roles is
     /// @param roleKey Identifier of the role to assume for this transaction
     /// @param shouldRevert Should the function revert on inner execution returning success false?
     /// @notice Can only be called by enabled modules
-    function execTransactionWithRole(
+    function _execTransactionWithRole(
         address to,
         uint256 value,
         bytes calldata data,
@@ -193,7 +193,7 @@ contract Roles is
     /// @param roleKey Identifier of the role to assume for this transaction
     /// @param shouldRevert Should the function revert on inner execution returning success false?
     /// @notice Can only be called by enabled modules
-    function execTransactionWithRoleReturnData(
+    function _execTransactionWithRoleReturnData(
         address to,
         uint256 value,
         bytes calldata data,
