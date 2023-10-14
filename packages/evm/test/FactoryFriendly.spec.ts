@@ -21,19 +21,19 @@ describe("Module works with factory", () => {
     const Integrity = await hre.ethers.getContractFactory("Integrity");
     const integrity = await Integrity.deploy();
 
-    const Modifier = await hre.ethers.getContractFactory("Roles", {
+    const Module = await hre.ethers.getContractFactory("RolesHarness", {
       libraries: {
         Integrity: integrity.address,
         Packer: packer.address,
       },
     });
-    const masterCopy = await Modifier.deploy(
+    const masterCopy = await Module.deploy(
       FirstAddress,
       FirstAddress,
       FirstAddress
     );
 
-    return { factory, masterCopy, Modifier };
+    return { factory, masterCopy, Modifier: Module };
   }
 
   it("should throw because master copy is already initialized", async () => {
@@ -80,7 +80,7 @@ describe("Module works with factory", () => {
 
     const proxy = Modifier.attach(newProxyAddress);
     // const newProxy = await hre.ethers.getContractAt("Roles", newProxyAddress);
-    expect(await proxy.avatar()).to.be.eq(avatar.address);
-    expect(await proxy.target()).to.be.eq(target.address);
+    expect(await proxy.getAvatar()).to.be.eq(avatar.address);
+    expect(await proxy.getTarget()).to.be.eq(target.address);
   });
 });

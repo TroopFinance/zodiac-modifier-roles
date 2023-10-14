@@ -50,7 +50,7 @@ async function setup() {
     .connect(owner)
     .setTransactionUnwrapper(multisend.address, "0x8d80ff0a", adapter.address);
 
-  await roles.enableModule(invoker.address);
+  // await roles.enableModule(invoker.address);
 
   await roles.connect(owner).assignRoles(invoker.address, [ROLE_KEY], [true]);
   await roles.connect(owner).setDefaultRole(invoker.address, ROLE_KEY);

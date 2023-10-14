@@ -165,21 +165,21 @@ export async function deployRolesMod(
 ) {
   await getSingletonFactory(hre.ethers.provider.getSigner());
 
-  const Integrity = await hre.ethers.getContractFactory("Integrity");
-  const integrity = await Integrity.deploy();
-
   const Packer = await hre.ethers.getContractFactory("Packer");
   const packer = await Packer.deploy();
 
-  const Modifier = await hre.ethers.getContractFactory("Roles", {
+  const Integrity = await hre.ethers.getContractFactory("Integrity");
+  const integrity = await Integrity.deploy();
+
+  const Module = await hre.ethers.getContractFactory("RolesHarness", {
     libraries: {
       Integrity: integrity.address,
       Packer: packer.address,
     },
   });
-  const modifier = await Modifier.deploy(owner, avatar, target);
+  const module = await Module.deploy(owner, avatar, target);
 
-  return modifier;
+  return module;
 }
 
 export const encodeMultisendPayload = (txs: MetaTransaction[]): string => {

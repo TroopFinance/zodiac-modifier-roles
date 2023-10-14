@@ -614,7 +614,7 @@ describe("Allowance", async () => {
         avatar.address,
         avatar.address
       );
-      await roles.enableModule(invoker.address);
+      // await roles.enableModule(invoker.address);
 
       await roles
         .connect(owner)

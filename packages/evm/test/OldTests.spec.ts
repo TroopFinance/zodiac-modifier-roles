@@ -49,7 +49,7 @@ describe("OldTests", async () => {
       avatar.address
     );
 
-    await modifier.enableModule(invoker.address);
+    // await modifier.enableModule(invoker.address);
 
     return {
       modifier,
@@ -249,9 +249,7 @@ describe("OldTests", async () => {
           mint.data as string,
           0
         )
-      )
-        .to.be.revertedWithCustomError(modifier, `NotAuthorized`)
-        .withArgs(user1.address);
+      ).to.be.revertedWithCustomError(modifier, `NoMembership`);
     });
 
     it("reverts if the call is not an allowed target", async () => {
@@ -877,9 +875,7 @@ describe("OldTests", async () => {
           mint.data || "",
           0
         )
-      )
-        .to.be.revertedWithCustomError(modifier, `NotAuthorized`)
-        .withArgs(user1.address);
+      ).to.be.revertedWithCustomError(modifier, `NoMembership`);
     });
 
     it("reverts if the call is not an allowed target", async () => {

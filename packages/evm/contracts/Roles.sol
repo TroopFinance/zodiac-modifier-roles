@@ -8,15 +8,20 @@ import "./PermissionBuilder.sol";
 import "./PermissionChecker.sol";
 import "./PermissionLoader.sol";
 
-/**
- * @title Zodiac Roles Mod - granular, role-based, access control for your
- * on-chain avatar accounts (like Safe).
- * @author Cristóvão Honorato - <cristovao.honorato@gnosis.io>
- * @author Jan-Felix Schwarz  - <jan-felix.schwarz@gnosis.io>
- * @author Auryn Macmillan    - <auryn.macmillan@gnosis.io>
- * @author Nathan Ginnever    - <nathan.ginnever@gnosis.io>
- */
-contract Roles is
+/// @title Zodiac Roles Mod - granular, role-based, access control for your
+/// on-chain avatar accounts (like Safe).
+/// @author Cristóvão Honorato - <cristovao.honorato@gnosis.io>
+/// @author Jan-Felix Schwarz  - <jan-felix.schwarz@gnosis.io>
+/// @author Auryn Macmillan    - <auryn.macmillan@gnosis.io>
+/// @author Nathan Ginnever    - <nathan.ginnever@gnosis.io>
+///
+/// @notice Modified by Troop Labs for Troops! Most notable changes:
+///     * This contract is now a module instead of a modifier.
+///     * This contract is intended to assign roles to regular users (troop
+///         members) instead of other Zodiac/Safe modules.
+///     * This contract is now intended to be inherited, and external onlyOwner
+///         functions have been changed to internal functions.
+abstract contract Roles is
     Initializable,
     Module,
     AllowanceTracker,
