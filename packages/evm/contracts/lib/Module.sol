@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
-/// @title Module Interface - A contract that can pass messages to a Module Manager contract if enabled by that contract.
 pragma solidity >=0.7.0 <0.9.0;
 
 import "@gnosis.pm/zodiac/contracts/interfaces/IAvatar.sol";
-import "@gnosis.pm/zodiac/contracts/guard/Guardable.sol";
+import "./Guardable.sol";
 
+/// @title Module Interface - A contract that can pass messages to a Module Manager contract if enabled by that contract.
+/// @notice Modified from Zodiac
 abstract contract Module is Guardable {
     /// @dev Address that will ultimately execute function calls.
-    address public avatar;
+    /// keccak("gnosis.zodiac.module.avatar")
+    bytes32 internal constant AVATAR_SLOT =
+        0x05ce79daf8a182ab61206fba3b76a53517b376d81c3b7bc1aadff2ca8a53e325;
     /// @dev Address that this module will pass transactions to.
-    address public target;
+    /// keccak("gnosis.zodiac.module.target")
+    bytes32 internal constant TARGET_SLOT =
+        0x7a1827a1a337eba3dac7fa17ecffa597990bab74c6ce07f49110b8a6ba5de28f;
 
     /// @dev Emitted each time the avatar is set.
     event AvatarSet(address indexed previousAvatar, address indexed newAvatar);
@@ -19,18 +24,38 @@ abstract contract Module is Guardable {
 
     /// @dev Sets the avatar to a new avatar (`newAvatar`).
     /// @notice Can only be called by the current owner.
-    function setAvatar(address _avatar) public onlyOwner {
-        address previousAvatar = avatar;
-        avatar = _avatar;
-        emit AvatarSet(previousAvatar, _avatar);
+    function setAvatar(address avatar) internal {
+        address previousAvatar;
+        assembly {
+            previousAvatar := sload(AVATAR_SLOT)
+            sstore(AVATAR_SLOT, avatar)
+        }
+        emit AvatarSet(previousAvatar, avatar);
+    }
+
+    /// @notice Get the set avatar
+    function getAvatar() public view returns (address avatar) {
+        assembly {
+            avatar := sload(AVATAR_SLOT)
+        }
     }
 
     /// @dev Sets the target to a new target (`newTarget`).
     /// @notice Can only be called by the current owner.
-    function setTarget(address _target) public onlyOwner {
-        address previousTarget = target;
-        target = _target;
-        emit TargetSet(previousTarget, _target);
+    function setTarget(address target) internal {
+        address previousTarget = getTarget();
+        assembly {
+            previousTarget := sload(TARGET_SLOT)
+            sstore(TARGET_SLOT, target)
+        }
+        emit TargetSet(previousTarget, target);
+    }
+
+    /// @dev Get the set target
+    function getTarget() public view returns (address target) {
+        assembly {
+            target := sload(TARGET_SLOT)
+        }
     }
 
     /// @dev Passes a transaction to be executed by the avatar.
@@ -45,7 +70,7 @@ abstract contract Module is Guardable {
         bytes memory data,
         Enum.Operation operation
     ) internal returns (bool success) {
-        address currentGuard = guard;
+        address currentGuard = getGuard();
         if (currentGuard != address(0)) {
             IGuard(currentGuard).checkTransaction(
                 /// Transaction info used by module transactions.
@@ -62,7 +87,7 @@ abstract contract Module is Guardable {
                 bytes("0x"),
                 msg.sender
             );
-            success = IAvatar(target).execTransactionFromModule(
+            success = IAvatar(getTarget()).execTransactionFromModule(
                 to,
                 value,
                 data,
@@ -70,7 +95,7 @@ abstract contract Module is Guardable {
             );
             IGuard(currentGuard).checkAfterExecution(bytes32("0x"), success);
         } else {
-            success = IAvatar(target).execTransactionFromModule(
+            success = IAvatar(getTarget()).execTransactionFromModule(
                 to,
                 value,
                 data,
@@ -92,7 +117,7 @@ abstract contract Module is Guardable {
         bytes memory data,
         Enum.Operation operation
     ) internal returns (bool success, bytes memory returnData) {
-        address currentGuard = guard;
+        address currentGuard = getGuard();
         if (currentGuard != address(0)) {
             IGuard(currentGuard).checkTransaction(
                 /// Transaction info used by module transactions.
@@ -109,7 +134,7 @@ abstract contract Module is Guardable {
                 bytes("0x"),
                 msg.sender
             );
-            (success, returnData) = IAvatar(target)
+            (success, returnData) = IAvatar(getTarget())
                 .execTransactionFromModuleReturnData(
                     to,
                     value,
@@ -118,7 +143,7 @@ abstract contract Module is Guardable {
                 );
             IGuard(currentGuard).checkAfterExecution(bytes32("0x"), success);
         } else {
-            (success, returnData) = IAvatar(target)
+            (success, returnData) = IAvatar(getTarget())
                 .execTransactionFromModuleReturnData(
                     to,
                     value,

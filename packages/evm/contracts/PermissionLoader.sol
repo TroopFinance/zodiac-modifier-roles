@@ -59,7 +59,7 @@ abstract contract PermissionLoader is Core {
                 // patch Operator.EqualToAvatar which in reality works as
                 // a placeholder
                 conditionsFlat[i].operator = Operator.EqualTo;
-                compValues[i] = keccak256(abi.encode(avatar));
+                compValues[i] = keccak256(abi.encode(getAvatar()));
             }
             unchecked {
                 ++i;

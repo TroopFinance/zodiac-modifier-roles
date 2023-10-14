@@ -61,12 +61,9 @@ contract Roles is
             initParams,
             (address, address, address)
         );
-        __Ownable_init();
 
-        avatar = _avatar;
-        target = _target;
-
-        _transferOwnership(_owner);
+        setAvatar(_avatar);
+        setTarget(_target);
 
         emit RolesModSetup(msg.sender, _owner, _avatar, _target);
     }
