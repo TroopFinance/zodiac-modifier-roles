@@ -55,7 +55,7 @@ abstract contract PermissionBuilder is Core {
     /// @param roleKey identifier of the role to be modified.
     /// @param targetAddress Destination address of transaction.
     /// @param options designates if a transaction can send ether and/or delegatecall to target.
-    function allowTarget(
+    function _allowTarget(
         bytes32 roleKey,
         address targetAddress,
         ExecutionOptions options
@@ -70,7 +70,7 @@ abstract contract PermissionBuilder is Core {
     /// @dev Removes transactions to a target address.
     /// @param roleKey identifier of the role to be modified.
     /// @param targetAddress Destination address of transaction.
-    function revokeTarget(bytes32 roleKey, address targetAddress) internal {
+    function _revokeTarget(bytes32 roleKey, address targetAddress) internal {
         _roles()[roleKey].targets[targetAddress] = TargetAddress({
             clearance: Clearance.None,
             options: ExecutionOptions.None
@@ -81,7 +81,7 @@ abstract contract PermissionBuilder is Core {
     /// @dev Designates only specific functions can be called.
     /// @param roleKey identifier of the role to be modified.
     /// @param targetAddress Destination address of transaction.
-    function scopeTarget(bytes32 roleKey, address targetAddress) internal {
+    function _scopeTarget(bytes32 roleKey, address targetAddress) internal {
         _roles()[roleKey].targets[targetAddress] = TargetAddress({
             clearance: Clearance.Function,
             options: ExecutionOptions.None
@@ -94,7 +94,7 @@ abstract contract PermissionBuilder is Core {
     /// @param targetAddress Destination address of transaction.
     /// @param selector 4 byte function selector.
     /// @param options designates if a transaction can send ether and/or delegatecall to target.
-    function allowFunction(
+    function _allowFunction(
         bytes32 roleKey,
         address targetAddress,
         bytes4 selector,
@@ -111,7 +111,7 @@ abstract contract PermissionBuilder is Core {
     /// @param roleKey identifier of the role to be modified.
     /// @param targetAddress Destination address of transaction.
     /// @param selector 4 byte function selector.
-    function revokeFunction(
+    function _revokeFunction(
         bytes32 roleKey,
         address targetAddress,
         bytes4 selector
@@ -126,7 +126,7 @@ abstract contract PermissionBuilder is Core {
     /// @param selector 4 byte function selector.
     /// @param conditions The conditions to enforce.
     /// @param options designates if a transaction can send ether and/or delegatecall to target.
-    function scopeFunction(
+    function _scopeFunction(
         bytes32 roleKey,
         address targetAddress,
         bytes4 selector,
@@ -151,7 +151,7 @@ abstract contract PermissionBuilder is Core {
         );
     }
 
-    function setAllowance(
+    function _setAllowance(
         bytes32 key,
         uint128 balance,
         uint128 maxBalance,

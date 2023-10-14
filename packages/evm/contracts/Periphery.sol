@@ -17,7 +17,7 @@ abstract contract Periphery {
 
     mapping(bytes32 => ITransactionUnwrapper) public unwrappers;
 
-    function setTransactionUnwrapper(
+    function _setTransactionUnwrapper(
         address to,
         bytes4 selector,
         ITransactionUnwrapper adapter
