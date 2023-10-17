@@ -177,7 +177,7 @@ export async function deployRolesMod(
       Packer: packer.address,
     },
   });
-  const module = await Module.deploy(owner, avatar, target);
+  const module = await Module.deploy(avatar);
 
   return module;
 }

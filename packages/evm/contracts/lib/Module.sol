@@ -12,15 +12,9 @@ abstract contract Module is Guardable {
     /// keccak("gnosis.zodiac.module.avatar")
     bytes32 internal constant AVATAR_SLOT =
         0x05ce79daf8a182ab61206fba3b76a53517b376d81c3b7bc1aadff2ca8a53e325;
-    /// @dev Address that this module will pass transactions to.
-    /// keccak("gnosis.zodiac.module.target")
-    bytes32 internal constant TARGET_SLOT =
-        0x7a1827a1a337eba3dac7fa17ecffa597990bab74c6ce07f49110b8a6ba5de28f;
 
     /// @dev Emitted each time the avatar is set.
     event AvatarSet(address indexed previousAvatar, address indexed newAvatar);
-    /// @dev Emitted each time the Target is set.
-    event TargetSet(address indexed previousTarget, address indexed newTarget);
 
     /// @dev Sets the avatar to a new avatar (`newAvatar`).
     /// @notice Can only be called by the current owner.
@@ -37,24 +31,6 @@ abstract contract Module is Guardable {
     function getAvatar() public view returns (address avatar) {
         assembly {
             avatar := sload(AVATAR_SLOT)
-        }
-    }
-
-    /// @dev Sets the target to a new target (`newTarget`).
-    /// @notice Can only be called by the current owner.
-    function setTarget(address target) internal {
-        address previousTarget = getTarget();
-        assembly {
-            previousTarget := sload(TARGET_SLOT)
-            sstore(TARGET_SLOT, target)
-        }
-        emit TargetSet(previousTarget, target);
-    }
-
-    /// @dev Get the set target
-    function getTarget() public view returns (address target) {
-        assembly {
-            target := sload(TARGET_SLOT)
         }
     }
 
@@ -87,7 +63,7 @@ abstract contract Module is Guardable {
                 bytes("0x"),
                 msg.sender
             );
-            success = IAvatar(getTarget()).execTransactionFromModule(
+            success = IAvatar(getAvatar()).execTransactionFromModule(
                 to,
                 value,
                 data,
@@ -95,7 +71,7 @@ abstract contract Module is Guardable {
             );
             IGuard(currentGuard).checkAfterExecution(bytes32("0x"), success);
         } else {
-            success = IAvatar(getTarget()).execTransactionFromModule(
+            success = IAvatar(getAvatar()).execTransactionFromModule(
                 to,
                 value,
                 data,
@@ -134,7 +110,7 @@ abstract contract Module is Guardable {
                 bytes("0x"),
                 msg.sender
             );
-            (success, returnData) = IAvatar(getTarget())
+            (success, returnData) = IAvatar(getAvatar())
                 .execTransactionFromModuleReturnData(
                     to,
                     value,
@@ -143,7 +119,7 @@ abstract contract Module is Guardable {
                 );
             IGuard(currentGuard).checkAfterExecution(bytes32("0x"), success);
         } else {
-            (success, returnData) = IAvatar(getTarget())
+            (success, returnData) = IAvatar(getAvatar())
                 .execTransactionFromModuleReturnData(
                     to,
                     value,

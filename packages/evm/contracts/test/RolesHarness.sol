@@ -6,11 +6,7 @@ import {Roles, Enum, ITransactionUnwrapper, ExecutionOptions, ConditionFlat} fro
 /// @title RolesHarness
 /// @notice Test harness for the modified Roles module
 contract RolesHarness is Roles {
-    constructor(
-        address _owner,
-        address _avatar,
-        address _target
-    ) Roles(_owner, _avatar, _target) {}
+    constructor(address _avatar) Roles(_avatar) {}
 
     function assignRoles(
         address module,

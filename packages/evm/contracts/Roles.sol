@@ -47,30 +47,19 @@ abstract contract Roles is
     /// Sender is allowed to make this call, but the internal transaction failed
     error ModuleTransactionFailed();
 
-    // constructor() {
-    //     _disableInitializers();
-    // }
-    /// @param _owner Address of the owner
-    /// @param _avatar Address of the avatar (e.g. a Gnosis Safe)
-    /// @param _target Address of the contract that will call exec function
-    constructor(address _owner, address _avatar, address _target) {
-        bytes memory initParams = abi.encode(_owner, _avatar, _target);
-        setUp(initParams);
+    constructor(address _avatar) {
+        setUp(abi.encode(_avatar));
     }
 
     /// @dev There is no zero address check as solidty will check for
     /// missing arguments and the space of invalid addresses is too large
     /// to check. Invalid avatar or target address can be reset by owner.
     function setUp(bytes memory initParams) public initializer {
-        (address _owner, address _avatar, address _target) = abi.decode(
-            initParams,
-            (address, address, address)
-        );
+        address _avatar = abi.decode(initParams, (address));
 
         setAvatar(_avatar);
-        setTarget(_target);
 
-        emit RolesModSetup(msg.sender, _owner, _avatar, _target);
+        emit RolesModSetup(msg.sender, address(0), _avatar, _avatar);
     }
 
     /// @dev Getter for unstructured storage:

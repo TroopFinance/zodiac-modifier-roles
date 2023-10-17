@@ -12,8 +12,7 @@ import {
   toConditionsFlat,
 } from "./utils";
 import { defaultAbiCoder } from "@ethersproject/abi";
-import { AddressOne } from "@gnosis.pm/safe-contracts";
-import { BytesLike } from "ethers";
+import { BytesLike, constants } from "ethers";
 
 const ROLE_KEY =
   "0x000000000000000000000000000000000000000000000000000000000000000f";
@@ -112,7 +111,12 @@ describe("Roles", async () => {
       await roles.deployed();
       await expect(roles.deployTransaction)
         .to.emit(roles, "RolesModSetup")
-        .withArgs(user1.address, user1.address, user1.address, user1.address);
+        .withArgs(
+          user1.address,
+          constants.AddressZero,
+          user1.address,
+          user1.address
+        );
     });
   });
 
