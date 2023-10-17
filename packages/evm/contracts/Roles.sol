@@ -75,6 +75,25 @@ abstract contract Roles is
         }
     }
 
+    /// @dev Assigns and revokes roles to a given module (memory)
+    /// @dev ⚠️ Check that the caller is authorised to assign roles first ⚠️
+    /// @param module Module on which to assign/revoke roles.
+    /// @param roleKeys Roles to assign/revoke.
+    /// @param memberOf Assign (true) or revoke (false) corresponding roleKeys.
+    function _assignRolesMem(
+        address module,
+        bytes32[] memory roleKeys,
+        bool[] memory memberOf
+    ) internal {
+        if (roleKeys.length != memberOf.length) {
+            revert ArraysDifferentLength();
+        }
+        for (uint16 i; i < roleKeys.length; ++i) {
+            _roles()[roleKeys[i]].members[module] = memberOf[i];
+        }
+        emit AssignRoles(module, roleKeys, memberOf);
+    }
+
     /// @dev Assigns and revokes roles to a given module.
     /// @dev ⚠️ Check that the caller is authorised to assign roles first ⚠️
     /// @param module Module on which to assign/revoke roles.
