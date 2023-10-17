@@ -15,14 +15,34 @@ abstract contract Periphery {
         ITransactionUnwrapper adapter
     );
 
-    mapping(bytes32 => ITransactionUnwrapper) public unwrappers;
+    /// keccak("gnosis.zodiac.roles.periphery.unwrappers")
+    bytes32 internal constant UNWRAPPERS_SLOT =
+        0x48e11d58bcccb65f4d3198eb47b87f8ac1bd3c553f89457788c0d4b0eab35961;
+
+    function _unwrappers()
+        internal
+        pure
+        returns (mapping(bytes32 => ITransactionUnwrapper) storage unwrappers_)
+    {
+        assembly {
+            unwrappers_.slot := UNWRAPPERS_SLOT
+        }
+    }
+
+    function unwrappers(
+        bytes32 target
+    ) public view returns (ITransactionUnwrapper) {
+        return _unwrappers()[target];
+    }
 
     function _setTransactionUnwrapper(
         address to,
         bytes4 selector,
         ITransactionUnwrapper adapter
     ) internal {
-        unwrappers[bytes32(bytes20(to)) | (bytes32(selector) >> 160)] = adapter;
+        _unwrappers()[
+            bytes32(bytes20(to)) | (bytes32(selector) >> 160)
+        ] = adapter;
         emit SetUnwrapAdapter(to, selector, adapter);
     }
 
@@ -30,6 +50,6 @@ abstract contract Periphery {
         address to,
         bytes4 selector
     ) internal view returns (ITransactionUnwrapper) {
-        return unwrappers[bytes32(bytes20(to)) | (bytes32(selector) >> 160)];
+        return _unwrappers()[bytes32(bytes20(to)) | (bytes32(selector) >> 160)];
     }
 }
