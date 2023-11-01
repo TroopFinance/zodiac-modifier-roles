@@ -55,12 +55,12 @@ abstract contract PermissionBuilder is Core {
     /// @param roleKey identifier of the role to be modified.
     /// @param targetAddress Destination address of transaction.
     /// @param options designates if a transaction can send ether and/or delegatecall to target.
-    function allowTarget(
+    function _allowTarget(
         bytes32 roleKey,
         address targetAddress,
         ExecutionOptions options
-    ) external onlyOwner {
-        roles[roleKey].targets[targetAddress] = TargetAddress({
+    ) internal {
+        _roles()[roleKey].targets[targetAddress] = TargetAddress({
             clearance: Clearance.Target,
             options: options
         });
@@ -70,11 +70,8 @@ abstract contract PermissionBuilder is Core {
     /// @dev Removes transactions to a target address.
     /// @param roleKey identifier of the role to be modified.
     /// @param targetAddress Destination address of transaction.
-    function revokeTarget(
-        bytes32 roleKey,
-        address targetAddress
-    ) external onlyOwner {
-        roles[roleKey].targets[targetAddress] = TargetAddress({
+    function _revokeTarget(bytes32 roleKey, address targetAddress) internal {
+        _roles()[roleKey].targets[targetAddress] = TargetAddress({
             clearance: Clearance.None,
             options: ExecutionOptions.None
         });
@@ -84,11 +81,8 @@ abstract contract PermissionBuilder is Core {
     /// @dev Designates only specific functions can be called.
     /// @param roleKey identifier of the role to be modified.
     /// @param targetAddress Destination address of transaction.
-    function scopeTarget(
-        bytes32 roleKey,
-        address targetAddress
-    ) external onlyOwner {
-        roles[roleKey].targets[targetAddress] = TargetAddress({
+    function _scopeTarget(bytes32 roleKey, address targetAddress) internal {
+        _roles()[roleKey].targets[targetAddress] = TargetAddress({
             clearance: Clearance.Function,
             options: ExecutionOptions.None
         });
@@ -100,14 +94,15 @@ abstract contract PermissionBuilder is Core {
     /// @param targetAddress Destination address of transaction.
     /// @param selector 4 byte function selector.
     /// @param options designates if a transaction can send ether and/or delegatecall to target.
-    function allowFunction(
+    function _allowFunction(
         bytes32 roleKey,
         address targetAddress,
         bytes4 selector,
         ExecutionOptions options
-    ) external onlyOwner {
-        roles[roleKey].scopeConfig[_key(targetAddress, selector)] = BufferPacker
-            .packHeaderAsWildcarded(options);
+    ) internal {
+        _roles()[roleKey].scopeConfig[
+            _key(targetAddress, selector)
+        ] = BufferPacker.packHeaderAsWildcarded(options);
 
         emit AllowFunction(roleKey, targetAddress, selector, options);
     }
@@ -116,12 +111,12 @@ abstract contract PermissionBuilder is Core {
     /// @param roleKey identifier of the role to be modified.
     /// @param targetAddress Destination address of transaction.
     /// @param selector 4 byte function selector.
-    function revokeFunction(
+    function _revokeFunction(
         bytes32 roleKey,
         address targetAddress,
         bytes4 selector
-    ) external onlyOwner {
-        delete roles[roleKey].scopeConfig[_key(targetAddress, selector)];
+    ) internal {
+        delete _roles()[roleKey].scopeConfig[_key(targetAddress, selector)];
         emit RevokeFunction(roleKey, targetAddress, selector);
     }
 
@@ -131,17 +126,17 @@ abstract contract PermissionBuilder is Core {
     /// @param selector 4 byte function selector.
     /// @param conditions The conditions to enforce.
     /// @param options designates if a transaction can send ether and/or delegatecall to target.
-    function scopeFunction(
+    function _scopeFunction(
         bytes32 roleKey,
         address targetAddress,
         bytes4 selector,
         ConditionFlat[] memory conditions,
         ExecutionOptions options
-    ) external onlyOwner {
+    ) internal {
         Integrity.enforce(conditions);
 
         _store(
-            roles[roleKey],
+            _roles()[roleKey],
             _key(targetAddress, selector),
             conditions,
             options
@@ -156,27 +151,28 @@ abstract contract PermissionBuilder is Core {
         );
     }
 
-    function setAllowance(
+    function _setAllowance(
         bytes32 key,
         uint128 balance,
         uint128 maxBalance,
         uint128 refillAmount,
         uint64 refillInterval,
         uint64 refillTimestamp
-    ) external onlyOwner {
+    ) internal {
         maxBalance = maxBalance > 0 ? maxBalance : type(uint128).max;
 
         if (balance > maxBalance) {
             revert UnsuitableMaxBalanceForAllowance();
         }
 
-        allowances[key] = Allowance({
+        _allowances()[key] = Allowance({
             refillAmount: refillAmount,
+            maxBalance: maxBalance,
             refillInterval: refillInterval,
-            refillTimestamp: refillTimestamp,
             balance: balance,
-            maxBalance: maxBalance
+            refillTimestamp: refillTimestamp
         });
+
         emit SetAllowance(
             key,
             balance,

@@ -24,14 +24,14 @@ abstract contract PermissionChecker is Core, Periphery {
         uint256 value,
         bytes calldata data,
         Enum.Operation operation
-    ) internal view returns (Consumption[] memory) {
+    ) internal view virtual returns (Consumption[] memory) {
         // We never authorize the zero role, as it could clash with the
         // unassigned default role
         if (roleKey == 0) {
             revert NoMembership();
         }
 
-        Role storage role = roles[roleKey];
+        Role storage role = _roles()[roleKey];
         if (!role.members[msg.sender]) {
             revert NoMembership();
         }

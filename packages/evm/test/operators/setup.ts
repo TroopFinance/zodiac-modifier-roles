@@ -46,7 +46,7 @@ export async function baseSetup(
     avatar.address,
     avatar.address
   );
-  await roles.enableModule(invoker.address);
+  // await roles.enableModule(invoker.address);
 
   await roles.connect(owner).assignRoles(invoker.address, [ROLE_KEY], [true]);
   await roles.connect(owner).setDefaultRole(invoker.address, ROLE_KEY);

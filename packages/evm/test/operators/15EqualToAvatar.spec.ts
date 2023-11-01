@@ -18,7 +18,7 @@ describe("Operator - EqualToAvatar", async () => {
 
     const [, , alice, bob, charlie] = await hre.ethers.getSigners();
 
-    const avatar = await roles.avatar();
+    const avatar = await roles.getAvatar();
 
     await scopeFunction([
       {

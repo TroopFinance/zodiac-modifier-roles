@@ -62,7 +62,7 @@ abstract contract AllowanceTracker is Core {
 
             // Retrieve the allowance and calculate its current updated balance
             // and next refill timestamp.
-            Allowance storage allowance = allowances[key];
+            Allowance storage allowance = _allowances()[key];
             (uint128 balance, uint64 refillTimestamp) = _accruedAllowance(
                 allowance,
                 block.timestamp
@@ -106,7 +106,7 @@ abstract contract AllowanceTracker is Core {
                     consumption.balance - consumption.consumed
                 );
             } else {
-                allowances[key].balance = consumption.balance;
+                _allowances()[key].balance = consumption.balance;
             }
             unchecked {
                 ++i;

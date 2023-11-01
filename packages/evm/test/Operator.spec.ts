@@ -34,7 +34,7 @@ describe("Operator", async () => {
       avatar.address,
       avatar.address
     );
-    await modifier.enableModule(invoker.address);
+    // await modifier.enableModule(invoker.address);
 
     await modifier
       .connect(owner)

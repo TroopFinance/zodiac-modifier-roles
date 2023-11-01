@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 pragma solidity >=0.8.17 <0.9.0;
 
-import "@gnosis.pm/zodiac/contracts/core/Modifier.sol";
 import "./Consumptions.sol";
 import "./Core.sol";
 import "./Topology.sol";
@@ -60,7 +59,7 @@ abstract contract PermissionLoader is Core {
                 // patch Operator.EqualToAvatar which in reality works as
                 // a placeholder
                 conditionsFlat[i].operator = Operator.EqualTo;
-                compValues[i] = keccak256(abi.encode(avatar));
+                compValues[i] = keccak256(abi.encode(getAvatar()));
             }
             unchecked {
                 ++i;
@@ -143,7 +142,7 @@ abstract contract PermissionLoader is Core {
 
             result[insert].allowanceKey = key;
             (result[insert].balance, ) = _accruedAllowance(
-                allowances[key],
+                _allowances()[key],
                 block.timestamp
             );
             insert++;

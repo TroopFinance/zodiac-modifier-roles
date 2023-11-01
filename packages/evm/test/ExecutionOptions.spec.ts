@@ -31,7 +31,7 @@ async function setup() {
     avatar.address
   );
 
-  await modifier.enableModule(invoker.address);
+  // await modifier.enableModule(invoker.address);
 
   await modifier
     .connect(owner)

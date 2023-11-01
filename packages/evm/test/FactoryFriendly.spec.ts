@@ -21,19 +21,15 @@ describe("Module works with factory", () => {
     const Integrity = await hre.ethers.getContractFactory("Integrity");
     const integrity = await Integrity.deploy();
 
-    const Modifier = await hre.ethers.getContractFactory("Roles", {
+    const Module = await hre.ethers.getContractFactory("RolesHarness", {
       libraries: {
         Integrity: integrity.address,
         Packer: packer.address,
       },
     });
-    const masterCopy = await Modifier.deploy(
-      FirstAddress,
-      FirstAddress,
-      FirstAddress
-    );
+    const masterCopy = await Module.deploy(FirstAddress);
 
-    return { factory, masterCopy, Modifier };
+    return { factory, masterCopy, Modifier: Module };
   }
 
   it("should throw because master copy is already initialized", async () => {
@@ -51,13 +47,10 @@ describe("Module works with factory", () => {
 
   it("should deploy new roles module proxy", async () => {
     const { factory, masterCopy, Modifier } = await loadFixture(setup);
-    const [avatar, owner, target] = await ethers.getSigners();
+    const [avatar] = await ethers.getSigners();
 
     const initializer = await masterCopy.populateTransaction.setUp(
-      defaultAbiCoder.encode(
-        ["address", "address", "address"],
-        [owner.address, avatar.address, target.address]
-      )
+      defaultAbiCoder.encode(["address"], [avatar.address])
     );
     const receipt = await (
       await factory.deployModule(
@@ -80,7 +73,6 @@ describe("Module works with factory", () => {
 
     const proxy = Modifier.attach(newProxyAddress);
     // const newProxy = await hre.ethers.getContractAt("Roles", newProxyAddress);
-    expect(await proxy.avatar()).to.be.eq(avatar.address);
-    expect(await proxy.target()).to.be.eq(target.address);
+    expect(await proxy.getAvatar()).to.be.eq(avatar.address);
   });
 });
